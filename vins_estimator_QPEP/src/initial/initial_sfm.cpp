@@ -1,4 +1,5 @@
 #include "initial_sfm.h"
+#include <ros/time.h>
 
 GlobalSFM::GlobalSFM(){}
 
@@ -57,7 +58,9 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
     for(int i = 0; i < 3; ++i)
         for(int j = 0; j < 3; ++j)
             K__(i, j) = K.at<double>(i, j);
-    solvePnP_QPEP(pts_3_vector, pts_2_vector, K__, rvec, t, true);
+
+    solvePnP_QPEP(pts_3_vector, pts_2_vector, K__, 1e-3, rvec, t, false);
+
     if(std::isnan(rvec.at<double>(0, 0)) ||
        std::isnan(rvec.at<double>(1, 0)) ||
        std::isnan(rvec.at<double>(2, 0)) ||
@@ -68,23 +71,7 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
         return false;
     }
     cv::Rodrigues(rvec, r);
-//	bool pnp_succ;
-//    cv::Mat rvec__, t__;
-//    cv::eigen2cv(R_initial, tmp_r);
-//    cv::Rodrigues(tmp_r, rvec__);
-//    cv::eigen2cv(P_initial, t__);
-//	pnp_succ = cv::solvePnP(pts_3_vector, pts_2_vector, K, D, rvec__, t__, 0);
-//	if(!pnp_succ)
-//	{
-//		return false;
-//	}
 
-//    cv::Mat r_opencv;
-//    cv::Rodrigues(rvec__, r_opencv);
-//    cout << "R OpenCV: " << endl << r_opencv << endl;
-//    cout << "R QPEP: " << endl << r << endl;
-
-	//cout << "r " << endl << r << endl;
 	MatrixXd R_pnp;
 	cv::cv2eigen(r, R_pnp);
 	MatrixXd T_pnp;
@@ -339,12 +326,13 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
 void GlobalSFM::solvePnP_QPEP(const std::vector<cv::Point3f> &pts_3_vector,
                               const vector<cv::Point2f> &pts_2_vector,
                               const Eigen::Matrix3d &K__,
+                              const double &problem_scale,
                               cv::Mat &R, cv::Mat &t, bool useInitial)
 {
 
     std::vector<Eigen::Vector3d> world_pt0 = Point3fToVector3d(pts_3_vector);
     std::vector<Eigen::Vector2d> image_pt0 = Point2fToVector2d(pts_2_vector);
-    const double problem_scale = 1e-4;
+
     Eigen::Matrix<double, 4, 64> W;
     Eigen::Matrix<double, 4, 4> Q;
     Eigen::Matrix<double, 3, 37> D;
@@ -383,18 +371,20 @@ void GlobalSFM::solvePnP_QPEP(const std::vector<cv::Point3f> &pts_3_vector,
                                                    coef_J_pure, coefs_tq, pinvG, nullptr, opt);
         q0 = R2q(RR);
     }
-
-    Eigen::Matrix3d R__;
-    cv::Mat R__cv;
-    cv::Rodrigues(R, R__cv);
-    for(int i = 0; i < 3; ++i)
-        for(int j = 0; j < 3; ++j)
-            R__(i, j) = R__cv.at<double>(j, i);
-    q0 = R2q(R__);
-    stat = QPEP_lm_single(RR, tt, XX, q0, 100, 5e-2,
+    else
+    {
+        Eigen::Matrix3d R__;
+        cv::Mat R__cv;
+        cv::Rodrigues(R, R__cv);
+        for(int i = 0; i < 3; ++i)
+            for(int j = 0; j < 3; ++j)
+                R__(i, j) = R__cv.at<double>(i, j);
+        q0 = R2q(R__);
+    }
+    stat = QPEP_lm_fsolve(RR, tt, XX, q0, 100, 5e-2,
                           reinterpret_cast<eq_Jacob_func_handle>(eq_Jacob_pnp_func),
                           reinterpret_cast<t_func_handle>(t_pnp_func),
-                          coef_f_q_sym, coefs_tq, pinvG, stat);
+                          coef_f_q_sym, coefs_tq, pinvG, W, Q, stat);
     Eigen::Matrix4d Xinv = XX.inverse();
 
     cv::Mat rotation_matrix = cv::Mat(3, 3, CV_64FC1, cv::Scalar::all(0));
@@ -404,9 +394,9 @@ void GlobalSFM::solvePnP_QPEP(const std::vector<cv::Point3f> &pts_3_vector,
 
     cv::Mat rvec = R,
             tvec = t;
-    tvec.at<double>(0, 0) = Xinv(0, 3);
-    tvec.at<double>(1, 0) = Xinv(1, 3);
-    tvec.at<double>(2, 0) = Xinv(2, 3);
+    tvec.at<double>(0, 0) = XX(0, 3);
+    tvec.at<double>(1, 0) = XX(1, 3);
+    tvec.at<double>(2, 0) = XX(2, 3);
     cv::Rodrigues(rotation_matrix, rvec);
     R = rvec;
     t = tvec;

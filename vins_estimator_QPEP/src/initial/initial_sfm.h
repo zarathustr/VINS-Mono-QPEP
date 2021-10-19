@@ -141,6 +141,7 @@ public:
     void solvePnP_QPEP(const std::vector<cv::Point3f> &pts_3_vector,
                        const vector<cv::Point2f> &pts_2_vector,
                        const Eigen::Matrix3d &K__,
+                       const double &problem_scale,
                        cv::Mat &R, cv::Mat &t, bool useInitial = false);
 
 private:

@@ -336,13 +336,11 @@ bool Estimator::initialStructure()
             return false;
         }
 
-        std::vector<cv::Point2f> pts_2_vector_undis;
-        cv::undistortPoints(pts_2_vector, pts_2_vector_undis, K, D);
         Eigen::Matrix3d K__;
         for(int i = 0; i < 3; ++i)
             for(int j = 0; j < 3; ++j)
                 K__(i, j) = K.at<double>(i, j);
-        sfm.solvePnP_QPEP(pts_3_vector, pts_2_vector_undis, K__, rvec, t, true);
+        sfm.solvePnP_QPEP(pts_3_vector, pts_2_vector, K__, 1e-3, rvec, t, false);
         if(std::isnan(rvec.at<double>(0, 0)) ||
            std::isnan(rvec.at<double>(1, 0)) ||
            std::isnan(rvec.at<double>(2, 0)) ||
@@ -352,11 +350,8 @@ bool Estimator::initialStructure()
         {
             return false;
         }
-//        if (! cv::solvePnP(pts_3_vector, pts_2_vector, K, D, rvec, t, 1))
-//        {
-//            ROS_DEBUG("solve pnp fail!");
-//            return false;
-//        }
+        std::cout << "QPEP PnP Converged" << std::endl;
+
         cv::Rodrigues(rvec, r);
         MatrixXd R_pnp,tmp_R_pnp;
         cv::cv2eigen(r, tmp_R_pnp);
