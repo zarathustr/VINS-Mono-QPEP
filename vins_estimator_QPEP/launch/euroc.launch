@@ -7,7 +7,7 @@
         <param name="vins_folder" type="string" value="$(arg vins_path)" />
     </node>
 
-    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+    <node name="vins_estimator" pkg="vins_estimator_QPEP" type="vins_estimator" output="screen">
        <param name="config_file" type="string" value="$(arg config_path)" />
        <param name="vins_folder" type="string" value="$(arg vins_path)" />
     </node>
