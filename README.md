@@ -1,5 +1,7 @@
 # VINS-Mono-QPEP
-The QPEP (Quadratic Pose Estimation Problems) Enhanced VINS-Mono (Originated from https://github.com/HKUST-Aerial-Robotics/VINS-Fusion) . The details of the QPEP can be found in https://github.com/zarathustr/LibQPEP. We use the QPEP to solve the problem that in previous version of VINS-Mono, the PnP algorithm in the initialization SFM framework is not completely working. The original problem was that, due to the usage of OpenCV PnP and improper initial guess (e.g. R = I and t = 0), the PnP algorithm is not able to converge to a satisfactory global minimum. This problem has been solved by using the QPEP, which guarantees the global optimality.
+The QPEP (Quadratic Pose Estimation Problems) Enhanced VINS-Mono (Originated from https://github.com/HKUST-Aerial-Robotics/VINS-Fusion) . The details of the QPEP can be found in https://github.com/zarathustr/LibQPEP. 
+
+We use the QPEP to solve the problem that in previous version of VINS-Mono, the PnP algorithm in the initialization SFM framework was not completely working. The original problem was that, due to the usage of OpenCV PnP and improper initial guess (e.g. R = I and t = 0), the PnP algorithm, being a highly non-convex one, was not able to converge to a satisfactory global minimum. This problem has been solved by using the QPEP, which guarantees the global optimality.
 
 ## Usage
 Some of the codes are modified to adapt the ROS Noetic and Clang compiler. Therefore, the use of ROS Noetic is recommended. First go to https://github.com/zarathustr/LibQPEP for the repo of ```LibQPEP```. Then, follow the instructions to install the library:
