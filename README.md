@@ -2,7 +2,7 @@
 The QPEP (Quadratic Pose Estimation Problems) Enhanced VINS-Mono (Originated from https://github.com/HKUST-Aerial-Robotics/VINS-Fusion) . The details of the QPEP can be found in https://github.com/zarathustr/LibQPEP.
 
 ## Usage
-First go to https://github.com/zarathustr/LibQPEP for the repo of ```LibQPEP```. Then, follow the instructions to install the library:
+Some of the codes are modified to adapt the ROS Noetic and Clang compiler. Therefore, the use of ROS Noetic is recommended. First go to https://github.com/zarathustr/LibQPEP for the repo of ```LibQPEP```. Then, follow the instructions to install the library:
 ```
 cd LibQPEP
 mkdir build
