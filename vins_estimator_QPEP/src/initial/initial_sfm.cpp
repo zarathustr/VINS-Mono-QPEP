@@ -381,10 +381,10 @@ void GlobalSFM::solvePnP_QPEP(const std::vector<cv::Point3f> &pts_3_vector,
                 R__(i, j) = R__cv.at<double>(i, j);
         q0 = R2q(R__);
     }
-    stat = QPEP_lm_fsolve(RR, tt, XX, q0, 100, 5e-2,
+    stat = QPEP_lm_single(RR, tt, XX, q0, 1000, 5e-2,
                           reinterpret_cast<eq_Jacob_func_handle>(eq_Jacob_pnp_func),
                           reinterpret_cast<t_func_handle>(t_pnp_func),
-                          coef_f_q_sym, coefs_tq, pinvG, W, Q, stat);
+                          coef_f_q_sym, coefs_tq, pinvG, stat);
     Eigen::Matrix4d Xinv = XX.inverse();
 
     cv::Mat rotation_matrix = cv::Mat(3, 3, CV_64FC1, cv::Scalar::all(0));
