@@ -1,3 +1,4 @@
 <launch>
     <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins_estimator)/../config/vins_rviz_config.rviz" />
+    <node name="rqtvisualization" pkg="rqt_gui" type="rqt_gui" output="log" args="--perspective-file $(find vins_estimator)/../config/rqt_perspective.perspective" />
 </launch>
